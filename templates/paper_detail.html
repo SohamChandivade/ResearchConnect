@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_macros.html" import chips %}
+{% block title %}{{ paper.title }}{% endblock %}
+{% block content %}
+<div class="container page">
+  <a class="back-link" href="{{ url_for('publications') }}">← Back to publications</a>
+
+  <article class="rc-card">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+      <span class="chip chip-strong">Research paper</span>
+      {% if paper.year_num %}<span class="chip">{{ paper.year_num }}</span>{% endif %}
+    </div>
+
+    <h1 class="page-title">{{ paper.title }}</h1>
+    <p class="muted page-lead mb-4">
+      {{ paper.venue if paper.venue else 'Venue not listed' }}
+    </p>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <h2 class="card-heading">Publication details</h2>
+        <dl class="row">
+          <dt class="col-sm-3">Publication year</dt>
+          <dd class="col-sm-9">{{ paper.year_num if paper.year_num else 'Not listed' }}</dd>
+
+          <dt class="col-sm-3">Venue</dt>
+          <dd class="col-sm-9">{{ paper.venue if paper.venue else 'Not listed' }}</dd>
+
+          <dt class="col-sm-3">DOI</dt>
+          <dd class="col-sm-9">
+            {% if paper.doi %}
+              {{ paper.doi }}
+              {% if paper.doi_link %}<a class="ms-2" href="{{ paper.doi_link }}" target="_blank" rel="noopener noreferrer">Open DOI ↗</a>{% endif %}
+            {% else %}Not listed{% endif %}
+          </dd>
+
+          <dt class="col-sm-3">Source</dt>
+          <dd class="col-sm-9">
+            {% if paper.source_url %}<a href="{{ paper.source_url }}" target="_blank" rel="noopener noreferrer">View source ↗</a>
+            {% else %}Not listed{% endif %}
+          </dd>
+
+          <dt class="col-sm-3">Data status</dt>
+          <dd class="col-sm-9">{{ paper.data_status if paper.data_status else 'Not listed' }}</dd>
+        </dl>
+
+        <h2 class="card-heading mt-4">Research keywords</h2>
+        {% if paper.keyword_list %}{{ chips(paper.keyword_list) }}
+        {% else %}<p class="muted mb-0">No keywords listed for this paper.</p>{% endif %}
+      </div>
+
+      <div class="col-lg-4">
+        <h2 class="card-heading">Linked VJTI faculty authors</h2>
+        {% if paper.authors %}
+          <ul class="mini-list">
+            {% for author in paper.authors %}
+              <li>
+                <a href="{{ url_for('faculty_detail', faculty_id=author.faculty_id) }}">{{ author.name }}</a>
+                <span class="muted small d-block">{{ author.department if author.department else 'Department not listed' }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="muted mb-0">No VJTI faculty authors are linked to this paper in authorship.csv.</p>
+        {% endif %}
+      </div>
+    </div>
+  </article>
+</div>
+{% endblock %}

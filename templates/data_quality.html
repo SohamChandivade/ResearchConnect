@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Data Quality Report{% endblock %}
+{% block content %}
+<div class="container page">
+  <a class="back-link" href="{{ url_for('dashboard') }}">← Back to dashboard</a>
+  <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+    <div>
+      <h1 class="page-title">Data Quality Report</h1>
+      <p class="page-lead muted mb-0">
+        Checks the source faculty, publication and authorship records for common data issues.
+      </p>
+    </div>
+    <div class="rc-card text-center">
+      <div class="stat-num">{{ issue_count }}</div>
+      <div class="stat-label">Issues found</div>
+    </div>
+  </div>
+
+  {% if issue_count == 0 %}
+    <div class="rc-card">
+      <h2 class="card-heading">No issues found</h2>
+      <p class="muted mb-0">The current source CSV records passed all available quality checks.</p>
+    </div>
+  {% else %}
+    {% if report.duplicate_faculty_ids %}
+    <section class="rc-card mb-3">
+      <h2 class="card-heading">Duplicate faculty IDs <span class="chip">{{ report.duplicate_faculty_ids|length }}</span></h2>
+      <div class="table-responsive"><table class="table table-dark table-hover align-middle">
+        <thead><tr><th>Faculty ID</th><th>Occurrences</th></tr></thead>
+        <tbody>{% for item in report.duplicate_faculty_ids %}
+          <tr><td>{{ item.id }}</td><td>{{ item.count }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
+    {% if report.duplicate_paper_ids %}
+    <section class="rc-card mb-3">
+      <h2 class="card-heading">Duplicate paper IDs <span class="chip">{{ report.duplicate_paper_ids|length }}</span></h2>
+      <div class="table-responsive"><table class="table table-dark table-hover align-middle">
+        <thead><tr><th>Paper ID</th><th>Occurrences</th></tr></thead>
+        <tbody>{% for item in report.duplicate_paper_ids %}
+          <tr><td>{{ item.id }}</td><td>{{ item.count }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
+    {% if report.orphan_authorship_rows %}
+    <section class="rc-card mb-3">
+      <h2 class="card-heading">Orphan authorship rows <span class="chip">{{ report.orphan_authorship_rows|length }}</span></h2>
+      <div class="table-responsive"><table class="table table-dark table-hover align-middle">
+        <thead><tr><th>CSV row</th><th>Paper ID</th><th>Faculty ID</th><th>Missing reference</th></tr></thead>
+        <tbody>{% for item in report.orphan_authorship_rows %}
+          <tr>
+            <td>{{ item.row }}</td><td>{{ item.paper_id or 'Blank' }}</td>
+            <td>{{ item.faculty_id or 'Blank' }}</td><td>{{ item.missing|join(', ') }}</td>
+          </tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
+    {% if report.malformed_dois %}
+    <section class="rc-card mb-3">
+      <h2 class="card-heading">Malformed DOIs <span class="chip">{{ report.malformed_dois|length }}</span></h2>
+      <div class="table-responsive"><table class="table table-dark table-hover align-middle">
+        <thead><tr><th>Paper ID</th><th>Title</th><th>DOI value</th></tr></thead>
+        <tbody>{% for item in report.malformed_dois %}
+          <tr><td>{{ item.paper_id or 'Not listed' }}</td><td>{{ item.title }}</td><td class="text-break">{{ item.doi }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+
+    {% if report.papers_without_authors %}
+    <section class="rc-card mb-3">
+      <h2 class="card-heading">Papers without linked authors <span class="chip">{{ report.papers_without_authors|length }}</span></h2>
+      <div class="table-responsive"><table class="table table-dark table-hover align-middle">
+        <thead><tr><th>Paper ID</th><th>Title</th></tr></thead>
+        <tbody>{% for item in report.papers_without_authors %}
+          <tr><td>{{ item.paper_id }}</td><td>{{ item.title }}</td></tr>
+        {% endfor %}</tbody>
+      </table></div>
+    </section>
+    {% endif %}
+  {% endif %}
+  <p class="muted small mt-3">This report is read-only. It does not modify the source CSV files.</p>
+</div>
+{% endblock %}

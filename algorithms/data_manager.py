@@ -105,6 +105,14 @@ class Dataset:
 
     def __init__(self):
         self.warnings = []                    # data-quality notes shown on the dashboard
+
+        # Keep the normalized source rows as well as the cleaned records.
+        # Quality checks need to see duplicates and invalid links that the
+        # cleaned Dataset intentionally skips.
+        self.raw_faculty = read_csv_safe("faculty.csv", FACULTY_COLUMNS)
+        self.raw_papers = read_csv_safe("papers.csv", PAPER_COLUMNS)
+        self.raw_authorship = read_csv_safe("authorship.csv", AUTHORSHIP_COLUMNS)
+
         self._load_faculty()
         self._load_papers()
         self._link_authorship()
@@ -114,7 +122,7 @@ class Dataset:
     def _load_faculty(self):
         self.faculty = []
         self.faculty_by_id = {}
-        for row in read_csv_safe("faculty.csv", FACULTY_COLUMNS).to_dict("records"):
+        for row in self.raw_faculty.to_dict("records"):
             fid = row["faculty_id"]
             if not fid or fid in self.faculty_by_id:
                 continue
@@ -127,7 +135,7 @@ class Dataset:
     def _load_papers(self):
         self.papers = []
         self.papers_by_id = {}
-        for row in read_csv_safe("papers.csv", PAPER_COLUMNS).to_dict("records"):
+        for row in self.raw_papers.to_dict("records"):
             pid = row["paper_id"]
             if not pid or pid in self.papers_by_id:
                 continue
@@ -145,7 +153,7 @@ class Dataset:
         faculty_id exist in the other two files are used."""
         self.paper_authors = {}                              # paper_id -> [faculty_id, ...]
         faculty_papers = {fid: [] for fid in self.faculty_by_id}
-        rows = read_csv_safe("authorship.csv", AUTHORSHIP_COLUMNS).to_dict("records")
+        rows = self.raw_authorship.to_dict("records")
         rows.sort(key=lambda r: clean_int(r["author_order"]))
         unlinked = 0
         for row in rows:
@@ -202,6 +210,10 @@ class Dataset:
 
     def recent_papers(self, n=5):
         return sorted(self.papers, key=lambda p: p["year_num"] or 0, reverse=True)[:n]
+
+    def get_paper(self, paper_id):
+        """Return one cleaned paper, including its linked faculty authors, or None."""
+        return self.papers_by_id.get(str(paper_id).strip())
 
     # -- publications table --
     def publication_rows(self):
