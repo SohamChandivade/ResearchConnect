@@ -19,7 +19,7 @@
 <article class="rc-card paper-card">
   <div class="paper-year">{{ p.year_num if p.year_num else 'Year not listed' }}</div>
   <h3 class="paper-title">
-    {% if p.link %}<a href="{{ p.link }}" target="_blank" rel="noopener">{{ p.title }}</a>{% else %}{{ p.title }}{% endif %}
+    <a href="{{ url_for('publication_detail', paper_id=p.paper_id) }}">{{ p.title }}</a>
   </h3>
   <p class="paper-meta">{{ p.venue if p.venue else 'Venue not listed' }}</p>
   <p class="paper-meta">

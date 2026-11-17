@@ -41,7 +41,7 @@
         {% for r in pub_rows %}{% set p = r.paper %}
         <tr data-search="{{ r.search_text }}" data-year="{{ p.year_num if p.year_num else '' }}" data-depts='{{ r.departments|tojson }}'>
           <td data-label="Paper Title" class="col-title">
-            <span class="pub-title">{{ p.title }}</span>
+            <a class="pub-title" href="{{ url_for('publication_detail', paper_id=p.paper_id) }}">{{ p.title }}</a>
             {% if p.keyword_list %}<span class="pub-kw">{{ p.keyword_list|join('; ') }}</span>{% endif %}
           </td>
           <td data-label="Year" class="col-year">{% if p.year_num %}{{ p.year_num }}{% else %}<span class="muted">Not listed</span>{% endif %}</td>

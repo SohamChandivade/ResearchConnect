@@ -11,7 +11,7 @@ Run it with:   python app.py      then open  http://127.0.0.1:5000
 """
 from flask import Flask, abort, render_template, request, url_for
 
-from algorithms import analytics, collaboration, expertise
+from algorithms import analytics, collaboration, expertise, quality
 from algorithms.data_manager import Dataset
 
 app = Flask(__name__)
@@ -101,6 +101,25 @@ def department_detail(name):
     if summary is None:
         abort(404)
     return render_template("department.html", department=summary)
+
+
+# ---------- Data quality report ----------
+@app.route("/data-quality")
+def data_quality():
+    ds = Dataset()
+    report = quality.quality_report(ds)
+    issue_count = sum(len(items) for items in report.values())
+    return render_template("data_quality.html", report=report, issue_count=issue_count)
+
+
+# ---------- Publication detail ----------
+@app.route("/publications/<paper_id>")
+def publication_detail(paper_id):
+    ds = Dataset()
+    paper = ds.get_paper(paper_id)
+    if paper is None:
+        abort(404)
+    return render_template("paper_detail.html", paper=paper)
 
 
 # ---------- Publications ----------
