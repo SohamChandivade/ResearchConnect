@@ -1,5 +1,6 @@
 import csv
 import io
+
 import pytest
 
 from algorithms import data_manager

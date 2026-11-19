@@ -12,8 +12,18 @@ Run it with:   python app.py      then open  http://127.0.0.1:5000
 import os
 from flask import Flask, abort, render_template, request, url_for, Response
 
-from algorithms import analytics, collaboration, expertise, quality, data_manager
+from algorithms import analytics, collaboration, data_manager, expertise, quality
 from algorithms.data_manager import Dataset, clean_year
+
+# Load environment configuration from .env if present
+_env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
+if os.path.exists(_env_path):
+    with open(_env_path, "r", encoding="utf-8") as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _v = _line.split("=", 1)
+                os.environ.setdefault(_k.strip(), _v.strip().strip("'\""))
 
 app = Flask(__name__)
 app.config["ADMIN_ENABLED"] = os.environ.get("RC_ADMIN_ENABLED", "False").lower() in ("1", "true", "yes")

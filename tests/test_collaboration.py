@@ -77,10 +77,11 @@ def test_empty_graph_helpers_are_safe():
     import networkx as nx
 
     class EmptyDataset:
-        faculty = []
-        faculty_by_id = {}
-        paper_authors = {}
-        papers_by_id = {}
+        def __init__(self):
+            self.faculty = []
+            self.faculty_by_id = {}
+            self.paper_authors = {}
+            self.papers_by_id = {}
 
     graph = nx.Graph()
     stats = collaboration.network_stats(graph, EmptyDataset())
@@ -202,7 +203,8 @@ def test_centrality_table_single_node():
     import networkx as nx
 
     class SingleNodeDS:
-        faculty_by_id = {"f1": {"name": "Solo", "department": ""}}
+        def __init__(self):
+            self.faculty_by_id = {"f1": {"name": "Solo", "department": ""}}
 
     g = nx.Graph()
     g.add_node("f1")
@@ -217,7 +219,8 @@ def test_centrality_table_empty_graph():
     import networkx as nx
 
     class EmptyDS:
-        faculty_by_id = {}
+        def __init__(self):
+            self.faculty_by_id = {}
 
     g = nx.Graph()
     table = collaboration.centrality_table(g, EmptyDS())

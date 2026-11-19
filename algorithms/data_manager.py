@@ -258,7 +258,7 @@ class Dataset:
             if os.path.exists(src_path):
                 shutil.copy2(src_path, backup_path)
             else:
-                with open(backup_path, "w", encoding="utf-8-sig", newline="") as f:
+                with open(backup_path, "w", encoding="utf-8-sig", newline=""):
                     pass
             return backup_path
         except Exception as exc:

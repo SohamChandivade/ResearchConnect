@@ -1,6 +1,5 @@
 import csv
-import glob
-import os
+
 import pytest
 
 from algorithms import data_manager
@@ -182,3 +181,64 @@ def test_admin_route_successful_post(admin_dataset, tmp_path, monkeypatch):
         assert "f100" in html
         assert "added successfully" in html
         assert "backup created" in html
+
+
+def test_admin_route_post_paper_and_authorship(admin_dataset, tmp_path, monkeypatch):
+    app.config["ADMIN_ENABLED"] = True
+    monkeypatch.setenv("RC_ADMIN_PASSWORD", "mypassword")
+    with app.test_client() as client:
+        # Add paper
+        res_paper = client.post("/admin", data={
+            "password": "mypassword",
+            "table_type": "paper",
+            "paper_id": "p200",
+            "title": "Quantum Computing Advances",
+            "year": "2026",
+            "venue": "IEEE Quantum",
+        })
+        assert res_paper.status_code == 200
+        html_p = res_paper.get_data(as_text=True)
+        assert "p200" in html_p
+        assert "added successfully" in html_p
+        assert len(list(tmp_path.glob("papers.csv.*.bak"))) >= 1
+
+        # Add authorship link between p200 and existing faculty f1
+        res_auth = client.post("/admin", data={
+            "password": "mypassword",
+            "table_type": "authorship",
+            "paper_id": "p200",
+            "faculty_id": "f1",
+            "author_order": "1",
+        })
+        assert res_auth.status_code == 200
+        html_a = res_auth.get_data(as_text=True)
+        assert "p200" in html_a
+        assert "f1" in html_a
+        assert "added successfully" in html_a
+        assert len(list(tmp_path.glob("authorship.csv.*.bak"))) >= 1
+
+
+def test_admin_route_validation_errors(admin_dataset, monkeypatch):
+    app.config["ADMIN_ENABLED"] = True
+    monkeypatch.setenv("RC_ADMIN_PASSWORD", "mypassword")
+    with app.test_client() as client:
+        # Duplicate faculty ID
+        res_dup = client.post("/admin", data={
+            "password": "mypassword",
+            "table_type": "faculty",
+            "faculty_id": "f1",
+            "name": "Duplicate Alice",
+        })
+        assert res_dup.status_code == 200
+        assert "already exists" in res_dup.get_data(as_text=True)
+
+        # Non-existent reference in authorship
+        res_ref = client.post("/admin", data={
+            "password": "mypassword",
+            "table_type": "authorship",
+            "paper_id": "p_does_not_exist",
+            "faculty_id": "f1",
+        })
+        assert res_ref.status_code == 200
+        assert "does not exist" in res_ref.get_data(as_text=True)
+
