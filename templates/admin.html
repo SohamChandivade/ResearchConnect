@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Admin Data Entry{% endblock %}
+{% block content %}
+<div class="container page">
+  <h1 class="page-title">Admin Data Entry</h1>
+  <p class="muted page-lead">Add new records to the dataset. Each write is automatically preceded by a timestamped backup of the target CSV file.</p>
+
+  {% if success %}
+  <div class="rc-note mb-4" role="status">
+    <strong>Success:</strong> {{ success }}
+  </div>
+  {% endif %}
+
+  {% if error %}
+  <div class="rc-note mb-4" role="alert">
+    <strong>Error:</strong> {{ error }}
+  </div>
+  {% endif %}
+
+  <div class="rc-card mb-4">
+    <form method="post" action="{{ url_for('admin_page') }}" id="admin-form">
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <label class="form-label" for="admin-password"><strong>Admin Password *</strong></label>
+          <input class="form-control" type="password" id="admin-password" name="password" required autocomplete="current-password" placeholder="Enter admin password">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label" for="table-type"><strong>Record Type *</strong></label>
+          <select class="form-select" id="table-type" name="table_type" required onchange="showSection(this.value)">
+            <option value="faculty">Faculty Member (faculty.csv)</option>
+            <option value="paper">Publication (papers.csv)</option>
+            <option value="authorship">Authorship Link (authorship.csv)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Faculty Fields -->
+      <div id="section-faculty">
+        <h3 class="card-heading mb-3">Faculty Details</h3>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="fac-id">Faculty ID *</label>
+            <input class="form-control" type="text" id="fac-id" name="faculty_id" placeholder="e.g. F013">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="fac-name">Full Name *</label>
+            <input class="form-control" type="text" id="fac-name" name="name" placeholder="e.g. Dr. Jane Doe">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="fac-dept">Department</label>
+            <input class="form-control" type="text" id="fac-dept" name="department" placeholder="e.g. Computer Engineering">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="fac-exp">Expertise (semicolon-separated)</label>
+            <input class="form-control" type="text" id="fac-exp" name="expertise" placeholder="e.g. Machine Learning; Cybersecurity">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="fac-url">Profile URL</label>
+            <input class="form-control" type="url" id="fac-url" name="profile_url" placeholder="https://vjti.ac.in/...">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="fac-status">Data Status</label>
+            <input class="form-control" type="text" id="fac-status" name="data_status" placeholder="e.g. verified">
+          </div>
+        </div>
+      </div>
+
+      <!-- Paper Fields -->
+      <div id="section-paper" style="display: none;">
+        <h3 class="card-heading mb-3">Paper Details</h3>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="pap-id">Paper ID *</label>
+            <input class="form-control" type="text" id="pap-id" name="paper_id" placeholder="e.g. P020">
+          </div>
+          <div class="col-md-8">
+            <label class="form-label" for="pap-title">Title *</label>
+            <input class="form-control" type="text" id="pap-title" name="title" placeholder="Paper title">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="pap-year">Year</label>
+            <input class="form-control" type="number" id="pap-year" name="year" placeholder="e.g. 2026" min="1900" max="2100">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="pap-venue">Venue</label>
+            <input class="form-control" type="text" id="pap-venue" name="venue" placeholder="e.g. IEEE Transactions">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="pap-doi">DOI</label>
+            <input class="form-control" type="text" id="pap-doi" name="doi" placeholder="e.g. 10.1109/...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="pap-kw">Keywords (semicolon-separated)</label>
+            <input class="form-control" type="text" id="pap-kw" name="keywords" placeholder="e.g. AI; IoT; Robotics">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="pap-url">Source URL</label>
+            <input class="form-control" type="url" id="pap-url" name="source_url" placeholder="https://...">
+          </div>
+          <div class="col-12">
+            <label class="form-label" for="pap-status">Data Status</label>
+            <input class="form-control" type="text" id="pap-status" name="data_status" placeholder="e.g. verified">
+          </div>
+        </div>
+      </div>
+
+      <!-- Authorship Fields -->
+      <div id="section-authorship" style="display: none;">
+        <h3 class="card-heading mb-3">Authorship Link</h3>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label" for="auth-paper">Paper ID *</label>
+            <input class="form-control" type="text" id="auth-paper" name="paper_id" placeholder="e.g. P001">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="auth-fac">Faculty ID *</label>
+            <input class="form-control" type="text" id="auth-fac" name="faculty_id" placeholder="e.g. F001">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label" for="auth-order">Author Order</label>
+            <input class="form-control" type="number" id="auth-order" name="author_order" value="1" min="1">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="auth-url">Source URL</label>
+            <input class="form-control" type="url" id="auth-url" name="source_url" placeholder="https://...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label" for="auth-status">Data Status</label>
+            <input class="form-control" type="text" id="auth-status" name="data_status" placeholder="e.g. verified">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button class="btn rc-btn" type="submit">Add Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function showSection(type) {
+  document.getElementById('section-faculty').style.display = type === 'faculty' ? 'block' : 'none';
+  document.getElementById('section-paper').style.display = type === 'paper' ? 'block' : 'none';
+  document.getElementById('section-authorship').style.display = type === 'authorship' ? 'block' : 'none';
+}
+</script>
+{% endblock %}
